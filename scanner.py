@@ -27,12 +27,12 @@ palavras_reservadas = {
 tokens = [
              "WHITESPACE",
              "COMMENTARIO",
-             "E_PARENTESES",
-             "D_PARENTESES",
-             "E_COLCHETES",
-             "D_COLCHETES",
-             "E_CHAVES",
-             "D_CHAVES",
+             "EPARENTESE",
+             "DPARENTESE",
+             "ECOLCHETE",
+             "DCOLCHETE",
+             "ECHAVE",
+             "DCHAVE",
              'SEMICOLON',
              'VIRGULA',
              'PONTO',
@@ -53,12 +53,12 @@ tokens = [
              "NUMBER"
          ] + list(palavras_reservadas.values())
 
-t_E_PARENTESES = r'\('
-t_D_PARENTESES = r'\)'
-t_E_COLCHETES = r'\['
-t_D_COLCHETES = r'\]'
-t_E_CHAVES = r'\{'
-t_D_CHAVES = r'\}'
+t_EPARENTESE = r'\('
+t_DPARENTESE = r'\)'
+t_ECOLCHETE = r'\['
+t_DCOLCHETE = r'\]'
+t_ECHAVE = r'\{'
+t_DCHAVE = r'\}'
 t_SEMICOLON = r';'
 t_VIRGULA = r'\,'
 t_PONTO = r'\.'
@@ -109,13 +109,15 @@ def t_WHITESPACE(t):
     pass
 
 
-arquivoEntrada = Path("entrada.txt").read_text()
 
-lex = lexer.lex()
-lex.input(arquivoEntrada)
+if __name__ == "__main__":
+    arquivoEntrada = Path("entrada.txt").read_text()
 
-while True:
-    token = lex.token()
-    if not token:
-        break
-    print(token)
+    lex = lexer.lex()
+    lex.input(arquivoEntrada)
+
+    while True:
+        token = lex.token()
+        if not token:
+            break
+        print(token)
