@@ -21,29 +21,41 @@ def p_main(p):
 
 # multiplas classes
 def p_classes(p):
-    'classes : classe | classes classe'
+    '''
+    classes : classe 
+               | classes classe
+    '''
     p[0] = ('classes',p[1:])
 
 def p_classe(p):
     '''
     classe : CLASS ID EXTENDS ID ECHAVE variaveis metodos DCHAVE 
-    | CLASS ID ECHAVE variaveis metodos DCHAVE
-    | epsilon
+           | CLASS ID ECHAVE variaveis metodos DCHAVE  
+           | empty
     '''
     p[0] = ('classe', p[1:])    
 
 #multiplas variáveis
 def p_variaveis(p):
-    'variaveis : variavel | variaveis variavel'
+    '''
+    variaveis : variavel 
+              | variaveis variavel
+    '''
     p[0] = ('variaveis', p[1:])
 
 def p_variavel(p):
-    'variavel : tipo ID SEMICOLON | epsilon'
+    '''
+    variavel : tipo ID SEMICOLON 
+             | empty
+    '''
     p[0] = ('variavel', p[1:])
 
 #multiplos métodos
 def p_metodos(p):
-    'metodos : metodo | metodos metodo'
+    '''
+    metodos : metodo 
+            | metodos metodo
+    '''
     p[0] = ('metodos', p[1:])
 
 def p_metodo(p):
@@ -63,7 +75,7 @@ def p_params(p):
 def p_sequenciaparams(p):
     '''
     sequenciaparams : sequenciaparams SEMICOLON tipo ID 
-                    | epsilon
+                    | empty
 
     '''
     p[0] = ('sequenciaparams', p[1:])
@@ -79,12 +91,14 @@ def p_tipo(p):
 
 
 def p_cmds(p):
-    'cmds : epsilon | cmds cmd'
+    '''cmds : cmds cmd 
+            | empty
+    '''
     p[0] = ('cmds', p[1:])
 
 def p_cmd(p):
     '''
-    'cmd : ECHAVE cmds DCHAVE
+    cmd : ECHAVE cmds DCHAVE
             | IF EPARENTESE exp DPARENTESE cmd  
             | IF EPARENTESE exp DPARENTESE cmd ELSE cmd
             | WHILE EPARENTESE exp DPARENTESE cmd
@@ -147,7 +161,7 @@ def p_pexp(p):
             | NEW ID EPARENTESE DPARENTESE
             | EPARENTESE exp DPARENTESE
             | pexp PONTO ID
-            | pexp PONTO ID EPARENTESE exp DPARENTESE
+            | pexp PONTO ID EPARENTESE exps DPARENTESE
             | pexp PONTO ID EPARENTESE DPARENTESE
     '''
     p[0] = ('pexp', p[1:])
@@ -157,13 +171,15 @@ def p_exps(p):
     p[0] = ('exps', p[1:])
 
 def p_sequenciaexp(p):
-    'sequenciaexp : epsilon | sequenciaexp VIRGULA exp'
+    '''
+    sequenciaexp : sequenciaexp VIRGULA exp 
+                 | empty
+    '''
 
-def p_epsilon(p):
-    'epsilon:'
-    pass
+def p_empty(p):
+     'empty :'
+     pass
 
-
-parser = yacc.yacc(debug=True)
+parser = yacc.yacc(debug=True, method='SLR')
 entrada = Path("entrada.txt").read_text()
 parserOut = parser.parse(entrada)

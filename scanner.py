@@ -46,7 +46,6 @@ tokens = [
              "OP_MENOS",
              "OP_MAIS",
              "OP_MULTIPLICA",
-             "OP_DIVIDE",
              "OP_AND",
              "OP_NAO",
              "ID",
@@ -72,7 +71,6 @@ t_OP_NAO_IGUAL = r'!='
 t_OP_MENOS = r'\-'
 t_OP_MAIS = r'\+'
 t_OP_MULTIPLICA = r'\*'
-t_OP_DIVIDE = r'/'
 t_OP_AND = r'&&'
 t_OP_NAO = r'!'
 
