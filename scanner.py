@@ -81,14 +81,13 @@ def t_NUMBER(t):
     return t
 
 def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = palavras_reservadas.get(t.value, 'ID')
+    r'System.out.println | [a-zA-Z_][a-zA-Z_0-9]*'
+    if(t.value == 'System.out.println'):
+        t.type = palavras_reservadas.get(t.value, 'PRINT')
+    else:
+        t.type = palavras_reservadas.get(t.value, 'ID')
     return t
 
-def t_PRINT(t):
-    r'(System\.out\.println)'
-    t.type = palavras_reservadas.get(t.value, 'PRINT')
-    return t
 
 def t_error(t):
     print('Charactere Inválido' % t.value[0])
