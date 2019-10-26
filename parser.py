@@ -25,20 +25,69 @@ if __name__ == "__main__":
         p[0] = ('classes',p[1:])
 
     def p_classe(p):
-        'classe : CLASS ID EXTENDS ID ECHAVE variaveis metodos DCHAVE'
-    
+        '''
+        classe : CLASS ID EXTENDS ID ECHAVE variaveis metodos DCHAVE 
+        | CLASS ID ECHAVE variaveis metodos DCHAVE
+        '''
+        p[0] = ('classe', p[1:])    
 
     #multiplas variáveis
     def p_variaveis(p):
-        pass
+        'variaveis : variavel | variaveis variavel'
+        p[0] = ('variaveis', p[1:])
 
     def p_variavel(p):
-        pass
+        'variavel : tipo ID SEMICOLON'
+        p[0] = ('variavel', p[1:])
 
-    def p_metodo(p):
-        'metodo : PUBLIC tipo ID EPARENTESE '
-        pass
-    
     #multiplos métodos
     def p_metodos(p):
-        pass
+        'metodos : metodo | metodos metodo'
+        p[0] = ('metodos', p[1:])
+
+    def p_metodo(p):
+        '''
+        metodo : PUBLIC tipo ID EPARENTESE params DPARENTESE ECHAVE variaveis cmds RETURN exp SEMICOLON DCHAVE
+                | PUBLIC tipo ID EPARENTESE DPARENTESE ECHAVE variaveis cmds RETURN exp SEMICOLON DCHAVE
+        '''
+        p[0] = ('metodo', p[1:])
+    
+
+    def p_params(p):
+        '''
+        params : tipo ID sequenciaparams
+        '''
+        p[0] = ('params', p[1:])
+
+    def p_sequenciaparams(p):
+        '''
+        sequenciaparams : sequenciaparams SEMICOLON tipo ID 
+                        | SEMICOLON tipo ID
+        '''
+        p[0] = ('sequenciaparams', p[1:])
+
+    def p_tipo(p):
+        '''
+        tipo : INT ECOLCHETE DCOLCHETE 
+             | BOOLEAN 
+             | INT
+             | ID 
+        '''
+        p[0] = ('tipo', p[1:])
+
+
+    def p_cmds(p):
+        'cmds : cmd | cmds cmd'
+        p[0] = ('cmds', p[1:])
+
+    def p_cmd(p):
+        '''
+        'cmd : ECHAVE cmds DCHAVE
+              | if EPARENTESE exp DPARENTESE cmd  
+              | if EPARENTESE exp DPARENTESE cmd ELSE cmd
+              | WHILE EPARENTESE exp DPARENTESE cmd
+              | PRINT ECHAVE exp DCHAVE
+              | ID OP_ASSIGN exp 
+              | ID ECOLCHETE exp DCOLCHETE OP_ASSIGN exp
+        ''' 
+        p[0] = ('cmd', p[1:])
