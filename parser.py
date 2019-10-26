@@ -83,11 +83,59 @@ if __name__ == "__main__":
     def p_cmd(p):
         '''
         'cmd : ECHAVE cmds DCHAVE
-              | if EPARENTESE exp DPARENTESE cmd  
-              | if EPARENTESE exp DPARENTESE cmd ELSE cmd
+              | IF EPARENTESE exp DPARENTESE cmd  
+              | IF EPARENTESE exp DPARENTESE cmd ELSE cmd
               | WHILE EPARENTESE exp DPARENTESE cmd
-              | PRINT ECHAVE exp DCHAVE
-              | ID OP_ASSIGN exp 
-              | ID ECOLCHETE exp DCOLCHETE OP_ASSIGN exp
+              | PRINT EPARENTESE exp DPARENTESE SEMICOLON
+              | ID OP_ASSIGN exp SEMICOLON 
+              | ID ECOLCHETE exp DCOLCHETE OP_ASSIGN exp SEMICOLON
         ''' 
         p[0] = ('cmd', p[1:])
+
+    def p_exp(p):
+        '''
+        exp : exp OP_AND rexp
+            | rexp
+        '''
+        p[0] = ('exp', p[1:])
+    
+    def p_rexp(p):
+        '''
+        rexp : rexp OP_MENOR aexp 
+             | rexp OP_IGUAL aexp
+             | rexp OP_NAO_IGUAL aexp
+             | aexp
+        '''
+        p[0] = ('rexp', p[1:])
+
+    def p_aexp(p):
+        '''
+        aexp : aexp OP_MAIS mexp
+             | aexp OP_MENOS mexp
+             | mexp
+        '''
+        p[0] = ('aexp', p[1:])
+
+    def p_mexp(p):
+        '''
+        mexp : mexp OP_MULTIPLICA sexp
+             | sexp
+        '''
+        p[0] = ('mexp', p[1:])
+
+    def p_sexp(p):
+        '''
+        sexp : OP_NAO sexp
+             | OP_MENOS sexp
+             | TRUE
+             | FALSE
+             | NUMBER
+             | NULL
+             | NEW INT ECOLCHETE exp DCOLCHETE
+             | pexp PONTO LENGTH
+             | pexp ECOLCHETE exp DCOLCHETE
+             | pexp
+        '''
+        p[0] = ('sexp', p[1:])
+
+    
