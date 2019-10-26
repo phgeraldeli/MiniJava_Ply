@@ -117,19 +117,12 @@ def p_cmds(p):
 def p_cmd(p):
     '''
     cmd : ECHAVE cmds DCHAVE
-            | IF EPARENTESE exp DPARENTESE cmd else_cmd
+            | IF EPARENTESE exp DPARENTESE cmd ELSE cmd
             | WHILE EPARENTESE exp DPARENTESE cmd
             | PRINT EPARENTESE exp DPARENTESE SEMICOLON
             | ID cmd_id
     ''' 
     p[0] = ('cmd', p[1:])
-
-def p_else_cmd(p):
-    '''
-    else_cmd : ELSE cmd
-             | empty
-    '''
-    p[0] = ('else_cmd', p[1:])
     
 def p_cmd_id(p):
     '''
