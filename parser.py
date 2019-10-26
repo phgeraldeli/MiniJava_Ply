@@ -163,4 +163,16 @@ if __name__ == "__main__":
         'epsilon:'
         pass
 
-    
+    def p_error(p):
+        if not p:
+            print('Unexpected EOF')
+            return
+         print("Syntax error at line %d in token %s. Bad expression" % (p.lineno - lines, p.type))
+        parser.errok()
+        while True:
+        tok = parser.token()  # Get the next token
+        if not tok or tok.type == 'DCHAVE':
+            while tok and tok.type == 'DCHAVE':
+                tok = parser.token()
+            break
+    parser.restart()
