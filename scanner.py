@@ -15,7 +15,6 @@ palavras_reservadas = {
     'if': 'IF',
     'else': 'ELSE',
     'while': 'WHILE',
-    'System.out.println': 'PRINT',
     'length': 'LENGTH',
     'true': 'TRUE',
     'false': 'FALSE',
@@ -25,6 +24,7 @@ palavras_reservadas = {
 }
 
 tokens = [
+            "PRINT",
              "WHITESPACE",
              "COMMENTARIO",
              "EPARENTESE",
@@ -46,7 +46,6 @@ tokens = [
              "OP_MENOS",
              "OP_MAIS",
              "OP_MULTIPLICA",
-             "OP_DIVIDE",
              "OP_AND",
              "OP_NAO",
              "ID",
@@ -72,7 +71,6 @@ t_OP_NAO_IGUAL = r'!='
 t_OP_MENOS = r'\-'
 t_OP_MAIS = r'\+'
 t_OP_MULTIPLICA = r'\*'
-t_OP_DIVIDE = r'/'
 t_OP_AND = r'&&'
 t_OP_NAO = r'!'
 
@@ -83,14 +81,13 @@ def t_NUMBER(t):
     return t
 
 def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = palavras_reservadas.get(t.value, 'ID')
+    r'System.out.println | [a-zA-Z_][a-zA-Z_0-9]*'
+    if(t.value == 'System.out.println'):
+        t.type = palavras_reservadas.get(t.value, 'PRINT')
+    else:
+        t.type = palavras_reservadas.get(t.value, 'ID')
     return t
 
-def t_PRINT(t):
-    r'System\.out\.println'
-    t.type = palavras_reservadas.get(t.value, 'PRINT')
-    return t
 
 def t_error(t):
     print('Charactere Inválido' % t.value[0])
@@ -100,7 +97,7 @@ def t_error(t):
     return t
 
 def t_COMMENT(t):
-    r'(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
+    r'((/\*([^*]|[\r\n])|(\*+([^*/]|[\r\n])))*\*+/)|(//.*)'
     pass
 
 
@@ -108,16 +105,23 @@ def t_WHITESPACE(t):
     r'\s'
     pass
 
+precedence = (
+    ('left', "OP_ASSIGN"),
+    ('left', 'OP_AND'),
+    ('left', 'OP_IGUAL', 'OP_NAO_IGUAL'),
+    ('left', 'OP_MAIOR_IGUAL', 'OP_MAIOR', 'OP_MENOR_IGUAL', 'OP_MENOR'),
+    ('left', 'OP_MENOS', 'OP_MAIS'),
+    ('left', 'OP_MULTIPLICA'),
+    ('nonassoc', 'OP_NAO')
+)
 
+arquivoEntrada = Path("entrada.txt").read_text()
 
-if __name__ == "__main__":
-    arquivoEntrada = Path("entrada.txt").read_text()
+lex = lexer.lex()
+lex.input(arquivoEntrada)
 
-    lex = lexer.lex()
-    lex.input(arquivoEntrada)
-
-    while True:
-        token = lex.token()
-        if not token:
-            break
-        print(token)
+while True:
+    token = lex.token()
+    if not token:
+        break
+    print(token)
