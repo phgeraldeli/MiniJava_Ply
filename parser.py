@@ -28,6 +28,7 @@ if __name__ == "__main__":
         '''
         classe : CLASS ID EXTENDS ID ECHAVE variaveis metodos DCHAVE 
         | CLASS ID ECHAVE variaveis metodos DCHAVE
+        | epsilon
         '''
         p[0] = ('classe', p[1:])    
 
@@ -37,7 +38,7 @@ if __name__ == "__main__":
         p[0] = ('variaveis', p[1:])
 
     def p_variavel(p):
-        'variavel : tipo ID SEMICOLON'
+        'variavel : tipo ID SEMICOLON | epsilon'
         p[0] = ('variavel', p[1:])
 
     #multiplos métodos
@@ -62,7 +63,8 @@ if __name__ == "__main__":
     def p_sequenciaparams(p):
         '''
         sequenciaparams : sequenciaparams SEMICOLON tipo ID 
-                        | SEMICOLON tipo ID
+                        | epsilon
+
         '''
         p[0] = ('sequenciaparams', p[1:])
 
@@ -77,7 +79,7 @@ if __name__ == "__main__":
 
 
     def p_cmds(p):
-        'cmds : cmd | cmds cmd'
+        'cmds : epsilon | cmds cmd'
         p[0] = ('cmds', p[1:])
 
     def p_cmd(p):
@@ -137,5 +139,28 @@ if __name__ == "__main__":
              | pexp
         '''
         p[0] = ('sexp', p[1:])
+
+    def p_pexp(p):
+        '''
+        pexp : ID
+             | THIS
+             | NEW ID EPARENTESE DPARENTESE
+             | EPARENTESE exp DPARENTESE
+             | pexp PONTO ID
+             | pexp PONTO ID EPARENTESE exp DPARENTESE
+             | pexp PONTO ID EPARENTESE DPARENTESE
+        '''
+        p[0] = ('pexp', p[1:])
+
+    def p_exps(p):
+        'exps : exp sequenciaexp'
+        p[0] = ('exps', p[1:])
+
+    def p_sequenciaexp(p):
+        'sequenciaexp : epsilon | sequenciaexp VIRGULA exp'
+
+    def p_epsilon(p):
+        'epsilon:'
+        pass
 
     
