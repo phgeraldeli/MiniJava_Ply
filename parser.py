@@ -6,6 +6,10 @@ from ply.lex import LexToken
 # Parser para a linguagem mini-java
 #########
 
+precedence = (
+    ('left', 'DPARENTESE'),
+    ('left', 'ELSE')
+)
 
 ## metodos descrevendo as produções da linguagem 
 
@@ -22,23 +26,29 @@ def p_main(p):
 # multiplas classes
 def p_classes(p):
     '''
-    classes : empty 
-               | classes classe
+    classes : classes classe 
+               | empty 
     '''
     p[0] = ('classes',p[1:])
 
 def p_classe(p):
     '''
-    classe : CLASS ID EXTENDS ID ECHAVE variaveis metodos DCHAVE 
-           | CLASS ID ECHAVE variaveis metodos DCHAVE
+    classe : CLASS ID extends_id ECHAVE variaveis metodos DCHAVE
     '''
     p[0] = ('classe', p[1:])    
+
+def p_extends_id(p):
+    '''
+    extends_id : EXTENDS ID
+               | empty
+    '''
+    p[0] = ('extends_id', p[1:])
 
 #multiplas variáveis
 def p_variaveis(p):
     '''
-    variaveis : empty 
-              | variaveis variavel
+    variaveis : variaveis variavel
+              | empty
     '''
     p[0] = ('variaveis', p[1:])
 
@@ -51,18 +61,23 @@ def p_variavel(p):
 #multiplos métodos
 def p_metodos(p):
     '''
-    metodos : empty 
-            | metodos metodo
+    metodos : metodos metodo 
+            | empty
     '''
     p[0] = ('metodos', p[1:])
 
 def p_metodo(p):
     '''
-    metodo : PUBLIC tipo ID EPARENTESE params DPARENTESE ECHAVE variaveis cmds RETURN exp SEMICOLON DCHAVE
-            | PUBLIC tipo ID EPARENTESE DPARENTESE ECHAVE variaveis cmds RETURN exp SEMICOLON DCHAVE
+    metodo : PUBLIC tipo ID EPARENTESE params_o DPARENTESE ECHAVE variaveis cmds RETURN exp SEMICOLON DCHAVE
     '''
     p[0] = ('metodo', p[1:])
 
+def p_params_o(p):
+    '''
+    params_o : params
+             | empty
+    '''
+    p[0] = ('params_o', p[1:])
 
 def p_params(p):
     '''
@@ -72,7 +87,7 @@ def p_params(p):
 
 def p_sequenciaparams(p):
     '''
-    sequenciaparams : sequenciaparams SEMICOLON tipo ID 
+    sequenciaparams : SEMICOLON tipo ID sequenciaparams
                     | empty
 
     '''
@@ -80,16 +95,21 @@ def p_sequenciaparams(p):
 
 def p_tipo(p):
     '''
-    tipo : INT ECOLCHETE DCOLCHETE 
-            | BOOLEAN 
-            | INT
-            | ID 
+    tipo : INT tipo2 
+         | BOOLEAN
+         | ID 
     '''
     p[0] = ('tipo', p[1:])
 
+def p_tipo2(p):
+    '''
+    tipo2 : ECOLCHETE DCOLCHETE 
+          | empty  
+    '''
+    p[0] = ('tipo2', p[1:])
 
 def p_cmds(p):
-    '''cmds : cmds cmd 
+    '''cmds : cmd cmds
             | empty
     '''
     p[0] = ('cmds', p[1:])
@@ -97,14 +117,26 @@ def p_cmds(p):
 def p_cmd(p):
     '''
     cmd : ECHAVE cmds DCHAVE
-            | IF EPARENTESE exp DPARENTESE cmd  
-            | IF EPARENTESE exp DPARENTESE cmd ELSE cmd
+            | IF EPARENTESE exp DPARENTESE cmd else_cmd
             | WHILE EPARENTESE exp DPARENTESE cmd
             | PRINT EPARENTESE exp DPARENTESE SEMICOLON
-            | ID OP_ASSIGN exp SEMICOLON 
-            | ID ECOLCHETE exp DCOLCHETE OP_ASSIGN exp SEMICOLON
+            | ID cmd_id
     ''' 
     p[0] = ('cmd', p[1:])
+
+def p_else_cmd(p):
+    '''
+    else_cmd : ELSE cmd
+             | empty
+    '''
+    p[0] = ('else_cmd', p[1:])
+    
+def p_cmd_id(p):
+    '''
+    cmd_id : OP_ASSIGN exp SEMICOLON
+           | ECOLCHETE exp DCOLCHETE OP_ASSIGN exp SEMICOLON
+    '''
+    p[0] = ('cmd_id', p[1:])
 
 def p_exp(p):
     '''
@@ -115,12 +147,18 @@ def p_exp(p):
 
 def p_rexp(p):
     '''
-    rexp : rexp OP_MENOR aexp 
-            | rexp OP_IGUAL aexp
-            | rexp OP_NAO_IGUAL aexp
+    rexp : rexp rexp2
             | aexp
     '''
     p[0] = ('rexp', p[1:])
+
+def p_rexp2(p):
+    '''
+    rexp2 : OP_MENOR aexp
+          | OP_IGUAL aexp
+          | OP_NAO_IGUAL aexp
+    '''
+    p[0] = ('rexp2', p[1:])
 
 def p_aexp(p):
     '''
@@ -170,7 +208,7 @@ def p_exps(p):
 
 def p_sequenciaexp(p):
     '''
-    sequenciaexp : sequenciaexp VIRGULA exp 
+    sequenciaexp : VIRGULA exp sequenciaexp
                  | empty
     '''
     p[0] = ('sequenciaexp', p[1:])
@@ -194,6 +232,6 @@ def p_empty(p):
     'empty : '
     pass
 
-parser = yacc.yacc(debug=True, method='SLR')
+parser = yacc.yacc(debug=True)
 entrada = Path("entrada.txt").read_text()
 parserOut = parser.parse(entrada)
