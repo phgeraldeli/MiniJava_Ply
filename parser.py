@@ -1,7 +1,7 @@
 import ply.yacc as yacc
 from scanner import tokens
 from pathlib import Path
-
+from ply.lex import LexToken
 ##########
 # Parser para a linguagem mini-java
 #########
@@ -22,7 +22,7 @@ def p_main(p):
 # multiplas classes
 def p_classes(p):
     '''
-    classes : classe 
+    classes : empty 
                | classes classe
     '''
     p[0] = ('classes',p[1:])
@@ -30,30 +30,28 @@ def p_classes(p):
 def p_classe(p):
     '''
     classe : CLASS ID EXTENDS ID ECHAVE variaveis metodos DCHAVE 
-           | CLASS ID ECHAVE variaveis metodos DCHAVE  
-           | empty
+           | CLASS ID ECHAVE variaveis metodos DCHAVE
     '''
     p[0] = ('classe', p[1:])    
 
 #multiplas variáveis
 def p_variaveis(p):
     '''
-    variaveis : variavel 
+    variaveis : empty 
               | variaveis variavel
     '''
     p[0] = ('variaveis', p[1:])
 
 def p_variavel(p):
     '''
-    variavel : tipo ID SEMICOLON 
-             | empty
+    variavel : tipo ID SEMICOLON
     '''
     p[0] = ('variavel', p[1:])
 
 #multiplos métodos
 def p_metodos(p):
     '''
-    metodos : metodo 
+    metodos : empty 
             | metodos metodo
     '''
     p[0] = ('metodos', p[1:])
@@ -175,12 +173,11 @@ def p_sequenciaexp(p):
     sequenciaexp : sequenciaexp VIRGULA exp 
                  | empty
     '''
+    p[0] = ('sequenciaexp', p[1:])
 
-def p_empty(p):
-     'empty :'
-     pass
+    
 
-def p_error(p):
+def p_error(p): 
      if not p:
          print("End of File!")
          return
@@ -192,6 +189,10 @@ def p_error(p):
          if not tok or tok.type == 'DCHAVE': 
              break
      parser.restart()
+
+def p_empty(p):
+    'empty : '
+    pass
 
 parser = yacc.yacc(debug=True, method='SLR')
 entrada = Path("entrada.txt").read_text()
