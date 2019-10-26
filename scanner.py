@@ -15,7 +15,6 @@ palavras_reservadas = {
     'if': 'IF',
     'else': 'ELSE',
     'while': 'WHILE',
-    'System.out.println': 'PRINT',
     'length': 'LENGTH',
     'true': 'TRUE',
     'false': 'FALSE',
@@ -25,6 +24,7 @@ palavras_reservadas = {
 }
 
 tokens = [
+            "PRINT",
              "WHITESPACE",
              "COMMENTARIO",
              "EPARENTESE",
@@ -86,7 +86,7 @@ def t_ID(t):
     return t
 
 def t_PRINT(t):
-    r'System\.out\.println'
+    r'(System\.out\.println)'
     t.type = palavras_reservadas.get(t.value, 'PRINT')
     return t
 
@@ -106,7 +106,15 @@ def t_WHITESPACE(t):
     r'\s'
     pass
 
-
+precedence = (
+    ('left', "OP_ASSIGN"),
+    ('left', 'OP_AND'),
+    ('left', 'OP_IGUAL', 'OP_NAO_IGUAL'),
+    ('left', 'OP_MAIOR_IGUAL', 'OP_MAIOR', 'OP_MENOR_IGUAL', 'OP_MENOR'),
+    ('left', 'OP_MENOS', 'OP_MAIS'),
+    ('left', 'OP_MULTIPLICA'),
+    ('nonassoc', 'OP_NAO')
+)
 
 arquivoEntrada = Path("entrada.txt").read_text()
 

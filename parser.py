@@ -180,6 +180,19 @@ def p_empty(p):
      'empty :'
      pass
 
+def p_error(p):
+     if not p:
+         print("End of File!")
+         return
+     else:
+         print("Syntax Error : {}".format(p))
+     # Read ahead looking for a closing '}'
+     while True:
+         tok = parser.token()             # Get the next token
+         if not tok or tok.type == 'DCHAVE': 
+             break
+     parser.restart()
+
 parser = yacc.yacc(debug=True, method='SLR')
 entrada = Path("entrada.txt").read_text()
 parserOut = parser.parse(entrada)
