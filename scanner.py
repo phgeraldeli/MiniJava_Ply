@@ -110,14 +110,13 @@ def t_WHITESPACE(t):
 
 
 
-if __name__ == "__main__":
-    arquivoEntrada = Path("entrada.txt").read_text()
+arquivoEntrada = Path("entrada.txt").read_text()
 
-    lex = lexer.lex()
-    lex.input(arquivoEntrada)
+lex = lexer.lex()
+lex.input(arquivoEntrada)
 
-    while True:
-        token = lex.token()
-        if not token:
-            break
-        print(token)
+while True:
+    token = lex.token()
+    if not token:
+        break
+    print(token)
