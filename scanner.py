@@ -105,16 +105,6 @@ def t_WHITESPACE(t):
     r'\s'
     pass
 
-precedence = (
-    ('left', "OP_ASSIGN"),
-    ('left', 'OP_AND'),
-    ('left', 'OP_IGUAL', 'OP_NAO_IGUAL'),
-    ('left', 'OP_MAIOR_IGUAL', 'OP_MAIOR', 'OP_MENOR_IGUAL', 'OP_MENOR'),
-    ('left', 'OP_MENOS', 'OP_MAIS'),
-    ('left', 'OP_MULTIPLICA'),
-    ('nonassoc', 'OP_NAO')
-)
-
 arquivoEntrada = Path("entrada.txt").read_text()
 
 lex = lexer.lex()
