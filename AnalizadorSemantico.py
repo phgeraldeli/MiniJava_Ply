@@ -411,7 +411,7 @@ class AnalizadorSemantico(object):
 
         
 
-    def preenche_SymbolTable(self, prog):
+    def preenche_SymbolTable_e_Verifica(self, prog):
         #'prog : main classes'
         main = self.achar_Filhos(prog, "main")
         classes = self.achar_Filhos(prog, "classes")
@@ -433,8 +433,6 @@ class AnalizadorSemantico(object):
         self.counter_scope *= -1
 
         if (classes is not None):
-            self.resolve_classes(classes)
-
-        print(self.validate_key('Factorial', 1))    
+            self.resolve_classes(classes)   
         print(self.TabelaSimbolos)
     

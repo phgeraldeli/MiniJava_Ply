@@ -1,7 +1,7 @@
 beq_counter = 0
 
 def codeGenerator(entrada):
-    with open('out.txt', 'w') as out:
+    with open('mips_code.txt', 'w') as out:
         string = cgen(entrada)
         out.write(string)
 
@@ -142,7 +142,22 @@ def cgen_while(entrada):
     return string
 
 def cgen_elseif(entrada):
-    return ""
+    cond = cgen_exp(entrada.children[0])
+    parte1 = cgen_exp(entrada.children[1])
+
+    global beq_counter
+    string = (
+        f"{cond}\n"
+        f"sw $a0 0($sp)\n"
+        f"addiu $sp $sp -4\n"
+        f"beq $a0 $zero false{beq_counter}\n"
+        f"{parte1}\n"
+        f"false{beq_counter}:\n"
+        f"addiu $sp $sp 4"
+    )
+    beq_counter += 1
+
+    return string
 
 def cgen_if(entrada):
 

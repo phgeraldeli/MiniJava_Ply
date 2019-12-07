@@ -338,15 +338,6 @@ def p_error(p):
 class Node:
     def __init__(self,type,children=None,leaf=None):
         self.type = type
-        self.rule = type
-        self.parent = None
-        if (isinstance(self.rule, str)) and (self.rule.find('->') != -1):
-            simbolos = self.rule.split()
-            self.producao = simbolos[0]
-            self.simbolos = simbolos[2:]
-        else:
-            self.producao = None
-            self.simbolos = None
         if children:
             self.children = children              
         else:
@@ -371,6 +362,6 @@ parserOut = parser.parse(entrada)
 file_tree = open("tree.txt", "w+")
 build_tree(parserOut)
 file_tree.close()
-codeGenerator(parserOut)
 analizador_semantico = AnalizadorSemantico()
-analizador_semantico.preenche_SymbolTable(parserOut)
+analizador_semantico.preenche_SymbolTable_e_Verifica(parserOut)
+codeGenerator(parserOut)
