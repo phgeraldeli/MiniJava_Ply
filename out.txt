@@ -1,0 +1,48 @@
+move $fp $sp
+sw $ra 0($sp)
+addiu $sp $sp -4
+li $v0, 1
+move $a0, $t0
+syscall
+lw $ra 4($sp)
+addiu $sp $sp 4
+lw $fp 0($sp)
+jr $ra
+
+move $fp 0(%sp)
+sw $a0 0(%sp)
+addiu $sp $sp -4
+lw $t1 4($sp)
+addiu $sp $sp 4
+sw $a0 0($sp)
+addiu $sp $sp -4
+li $a0 1
+lw $t1 4($sp)
+slt $a0 $t1 $a0
+addiu $sp $sp 4
+sw $a0 0($sp)
+addiu $sp $sp -4
+lw $t1 4($sp)
+and $a0 $t1 $a0
+addiu $sp $sp 4
+sw $a0 0($sp)
+addiu $sp $sp -4
+beq $a0 $zero false0
+
+sw $a0 0($sp)
+addiu $sp $sp -4
+lw $t1 4($sp)
+and $a0 $t1 $a0
+addiu $sp $sp 4
+false0:
+addiu $sp $sp 4
+move $fp 0(%sp)
+sw $a0 0(%sp)
+addiu $sp $sp -4
+lw $t1 4($sp)
+addiu $sp $sp 4
+sw $a0 0($sp)
+addiu $sp $sp -4
+lw $t1 4($sp)
+and $a0 $t1 $a0
+addiu $sp $sp 4

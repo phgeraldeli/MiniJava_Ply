@@ -2,7 +2,10 @@ import ply.yacc as yacc
 from scanner import tokens
 from pathlib import Path
 from ply.lex import LexToken
+from codeGenerator import codeGenerator
+from AnalizadorSemantico import AnalizadorSemantico
 import re
+
 
 ##########
 # Parser para a linguagem mini-java
@@ -19,14 +22,12 @@ precedence = (
 def p_prog(p):
     'prog : main classes'
     p[0] = Node('prog', [ p[1], p[2] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_main(p):
     'main : CLASS ID ECHAVE PUBLIC STATIC VOID MAIN EPARENTESE STRING ECOLCHETE DCOLCHETE ID DPARENTESE ECHAVE cmd DCHAVE DCHAVE'
     p[0] = Node('main', [ p[15] ],  [ p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[16], p[17] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 # multiplas classes
 def p_classes(p):
@@ -38,16 +39,14 @@ def p_classes(p):
         p[0] = Node('classes', [ p[1], p[2] ], [ ])
     else:
         p[0]= Node('classes', [ p[1] ], [ ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_classe(p):
     '''
     classe : CLASS ID extends_id ECHAVE variaveis metodos DCHAVE
     '''
     p[0] = Node('classe', [ p[3], p[5], p[6] ], [ p[1], p[2], p[4], p[7] ])    
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_extends_id(p):
     '''
@@ -58,8 +57,7 @@ def p_extends_id(p):
         p[0] = Node('extends_id', [], [ p[1], p[2] ])
     else:
         p[0] = Node('extends_id', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 #multiplas variáveis
 def p_variaveis(p):
@@ -71,8 +69,7 @@ def p_variaveis(p):
         p[0] = Node('variaveis', [ p[1], p[2] ], [])
     else:
         p[0] = Node('variaveis', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
             
 
 def p_variavel(p):
@@ -80,8 +77,7 @@ def p_variavel(p):
     variavel : tipo ID SEMICOLON
     '''
     p[0] = Node('variavel', [ p[1] ], [ p[2], p[3] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 #multiplos métodos
 def p_metodos(p):
@@ -93,16 +89,14 @@ def p_metodos(p):
         p[0] = Node('metodos', [ p[1], p[2] ], [ ])
     else: 
         p[0] = Node('metodos', [ p[1] ], [ ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_metodo(p):
     '''
     metodo : PUBLIC tipo ID EPARENTESE params_o DPARENTESE ECHAVE variaveis cmds RETURN exp SEMICOLON DCHAVE
     '''
     p[0] = Node('metodo', [ p[2], p[5], p[8], p[9], p[11] ], [ p[1], p[3], p[4], p[6], p[7], p[10], p[12], p[13] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_params_o(p):
     '''
@@ -110,16 +104,14 @@ def p_params_o(p):
              | empty
     '''
     p[0] = Node('params_o', [ p[1] ], [ ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_params(p):
     '''
     params : tipo ID sequenciaparams
     '''
     p[0] = Node('params', [ p[1], p[3] ], [ p[2] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_sequenciaparams(p):
     '''
@@ -131,8 +123,7 @@ def p_sequenciaparams(p):
         p[0] = Node('sequenciaparams', [ p[2], p[4] ], [ p[1], p[3] ])
     else:    
         p[0] = Node('sequenciaparams', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_tipo(p):
     '''
@@ -144,8 +135,7 @@ def p_tipo(p):
         p[0] = Node('tipo', [ p[2] ], [ p[1] ])
     else:    
         p[0] = Node('tipo', [], [ p[1]])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_tipo2(p):
     '''
@@ -156,8 +146,7 @@ def p_tipo2(p):
         p[0] = Node('tipo2', [], [ p[1], p[2] ])
     else:
         p[0] = Node('tipo2', [ p[1] ], [ ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_cmds(p):
     '''cmds : cmd cmds
@@ -167,13 +156,13 @@ def p_cmds(p):
         p[0] = Node('cmds', [ p[1], p[2] ], [])
     else:
         p[0] = Node('cmds', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_cmd(p):
     '''
-    cmd : ECHAVE cmds DCHAVE
+    cmd :     ECHAVE cmds DCHAVE
             | IF EPARENTESE exp DPARENTESE cmd ELSE cmd
+            | IF EPARENTESE exp DPARENTESE cmd
             | WHILE EPARENTESE exp DPARENTESE cmd
             | PRINT EPARENTESE exp DPARENTESE SEMICOLON
             | ID cmd_id
@@ -189,8 +178,7 @@ def p_cmd(p):
             p[0] = Node('cmd', [ p[3] ], [ p[1], p[2], p[4], p[5] ])
     else:
         p[0] = Node('cmd', [ p[2] ], [ p[1] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
         
     
 def p_cmd_id(p):
@@ -202,8 +190,7 @@ def p_cmd_id(p):
         p[0] = Node('cmd_id', [ p[2] ], [ p[1], p[3] ])
     else:
         p[0] = Node('cmd_id', [ p[2], p[5] ], [ p[1], p[3], p[4], p[6] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_exp(p):
     '''
@@ -214,8 +201,7 @@ def p_exp(p):
         p[0] = Node('exp', [ p[1], p[3] ], [ p[2] ])
     else:
         p[0] = Node('exp', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_rexp(p):
     '''
@@ -226,8 +212,7 @@ def p_rexp(p):
         p[0] = Node('rexp', [ p[1], p[2] ], [])
     else:
         p[0] = Node('rexp', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_rexp2(p):
     '''
@@ -236,8 +221,7 @@ def p_rexp2(p):
           | OP_NAO_IGUAL aexp
     '''
     p[0] = Node('rexp2', [ p[2] ], [ p[1] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_aexp(p):
     '''
@@ -249,8 +233,7 @@ def p_aexp(p):
         p[0] = Node('aexp', [ p[1], p[3] ], [ p[2] ])
     else:
         p[0] = Node('aexp', [ p[1] ], [])        
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_mexp(p):
     '''
@@ -261,8 +244,7 @@ def p_mexp(p):
         p[0] = Node('mexp', [ p[1], p[3] ], [ p[2] ])
     else:
         p[0] = Node('mexp', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_sexp(p):
     '''
@@ -291,8 +273,7 @@ def p_sexp(p):
             p[0] = Node('sexp', [], [ p[1] ])
         else:
             p[0] = Node('sexp', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_pexp(p):
     '''
@@ -317,14 +298,12 @@ def p_pexp(p):
         p[0] = Node('pexp', [ p[1], p[5] ], [ p[2], p[3], p[4], p[6] ])
     elif len(p) == 7:
         p[0] = Node('pexp', [ p[1] ], [ p[2], p[3], p[4], p[5] ])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_exps(p):
     'exps : exp sequenciaexp'
     p[0] = Node('exps', [ p[1], p[2] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_sequenciaexp(p):
     '''
@@ -335,15 +314,13 @@ def p_sequenciaexp(p):
         p[0] = Node('sequenciaexp', [ p[2], p[3] ], [ p[1] ])
     else:
         p[0] = Node('sequenciaexp', [ p[1] ], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 
 def p_empty(p):
     'empty : '
     p[0] = Node('empty', [], [])
-    print(p[0].type)
-    print(p[0])
+    # print(p[0].type)
 
 def p_error(p): 
      if not p:
@@ -361,6 +338,15 @@ def p_error(p):
 class Node:
     def __init__(self,type,children=None,leaf=None):
         self.type = type
+        self.rule = type
+        self.parent = None
+        if (isinstance(self.rule, str)) and (self.rule.find('->') != -1):
+            simbolos = self.rule.split()
+            self.producao = simbolos[0]
+            self.simbolos = simbolos[2:]
+        else:
+            self.producao = None
+            self.simbolos = None
         if children:
             self.children = children              
         else:
@@ -385,3 +371,6 @@ parserOut = parser.parse(entrada)
 file_tree = open("tree.txt", "w+")
 build_tree(parserOut)
 file_tree.close()
+codeGenerator(parserOut)
+analizador_semantico = AnalizadorSemantico()
+analizador_semantico.preenche_SymbolTable(parserOut)
