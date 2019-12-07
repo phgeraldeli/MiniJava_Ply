@@ -3,7 +3,7 @@ class SymbolTable(object):
         self._symbols = {}
     
     def __str__(self):
-        symtab_header = 'Symbol table contents'
+        symtab_header = 'Tabela de Simbolos'
         lines = ['\n', symtab_header, '_' * len(symtab_header)]
         lines.extend(
             ('%7s: %r' % (key, value))
@@ -11,8 +11,6 @@ class SymbolTable(object):
         )
         s = '\n'.join(lines)
         return s
-
-    __repr__ = __str__
 
     def insert(self, symbol, type, scope):
         print('Insert: ' + symbol + ' with type ' + type + ' with scope ' + str(scope) + '\n')

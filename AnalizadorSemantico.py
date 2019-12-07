@@ -1,17 +1,8 @@
 from SymbolTable import SymbolTable
-from Symbol import Symbol
 
 class AnalizadorSemantico(object):
     def __init__(self):
-        self.qtdTabelas = 1
-        self.symtab = []
-        self.symtab.append(SymbolTable())
-        self.qtdClasses = 0
-        self.declClasses = SymbolTable()
-        self.qtd_true_branch = 0
-        self.qtd_false_branch = 0
-        self.qtd_endif_branch = 0
-        self.qtdWhile = 0
+        self.TabelaSimbolos = SymbolTable()
         self.counter_scope = 0
 
     def achar_Filhos(self, Node, tipo):
@@ -26,24 +17,21 @@ class AnalizadorSemantico(object):
                 return True
         return False
 
-    def validate_key_forward(self, key,scope, expected_value = None):
-        array_Decl = self.declClasses.find(key)
+    def validate_key(self, key,scope, expected_value = None):
+        array_Decl = self.TabelaSimbolos.find(key)
         if array_Decl is not None:
             current_value = array_Decl[0]
             if current_value == expected_value or expected_value is None:
-                if scope >= array_Decl[1]:
-                    return True
-        raise Exception (
-            'Simbolo ' + key + ' não declarado no escopo'
-        )
-
-    def validate_key_backward(self, key,scope, expected_value = None):
-        array_Decl = self.declClasses.find(key)
-        if array_Decl is not None:
-            current_value = array_Decl[0]
-            if current_value == expected_value or expected_value is None:
-                if scope <= array_Decl[1]:
-                    return True
+                if(self.counter_scope > 0):
+                    if(array_Decl[1] == "params"):
+                        return True
+                    if scope >= array_Decl[1]:
+                        return True
+                else:
+                    if(array_Decl[1] == "params"):
+                        return True
+                    if scope <= array_Decl[1]:
+                        return True 
         raise Exception (
             'Simbolo ' + key + ' não declarado no escopo'
         )
@@ -65,11 +53,11 @@ class AnalizadorSemantico(object):
         if(cmd.leaf[0] == "{"):
             self.counter_scope += 1
             cmd_cmds = self.achar_Filhos(cmd, "cmds")
-            #FAZ COISAS
+            self.resolve_cmds(cmd_cmds)
             self.counter_scope -= 1
         
         if(cmd.leaf[0] == "if"):
-            if(contain_leaf(cmd, "else")):
+            if(self.contain_leaf(cmd, "else")):
                 cmd_exp = self.achar_Filhos(cmd, "exp")
                 cmd_cmd1 = self.achar_Filhos(cmd, "cmd")
                 cmd_cmd2 = cmd.children[len(cmd.children) - 1]
@@ -95,11 +83,14 @@ class AnalizadorSemantico(object):
         if(cmd.children[0].type == "cmd_id"):
             #cmd_id :   OP_ASSIGN exp SEMICOLON
             #         | ECOLCHETE exp DCOLCHETE OP_ASSIGN exp SEMICOLON
+            self.validate_key(cmd.leaf[0], self.counter_scope)
             cmd_id = cmd.children[0]
             if (cmd_id.leaf[0] == "="):
                 cmd_id_exp = self.achar_Filhos(cmd_id, "exp")
                 self.resolve_exp(cmd_id_exp)
-                validate_key_forward(cmd.leaf[0], self.counter_scope)
+
+                self.validate_type(self.get_type(cmd.leaf[0]),self.get_exp_type(cmd_id_exp))
+
             if (cmd_id.leaf[0] == "["):
                 cmd_id_exp1 = cmd_id.children[0]
                 cmd_id_exp2 = cmd_id.children[1]
@@ -107,6 +98,123 @@ class AnalizadorSemantico(object):
                 self.resolve_exp(cmd_id_exp2)
 
         
+    def get_type(self, key):
+        return self.TabelaSimbolos.find(key)[0]        
+
+    def get_exp_type(self, exp):
+        if(len(exp.leaf) > 0):
+            # exp : exp OP_AND rexp
+            return "boolean"
+        else:
+            rexp = self.achar_Filhos(exp, "rexp")
+            if(rexp is not None):
+                return self.get_rexp_type(rexp)
+
+    def get_rexp_type(self, rexp):
+        #rexp : rexp rexp2
+        #    | aexp
+        # Caso rexp2 que envolve apenas operadores os logicos (<, ==, !=) temos booleanos
+        if(len(rexp.children) > 1):
+            return "boolean"
+        else:
+             return self.get_aexp_type(self.achar_Filhos(rexp, "aexp"))
+
+    def get_aexp_type(self,aexp):
+        #aexp : aexp OP_MAIS mexp
+        #    | aexp OP_MENOS mexp
+        #    | mexp
+        if(len(aexp.leaf) > 0):
+            aexp_aexp = self.achar_Filhos(aexp, "aexp")
+            aexp_mexp = self.achar_Filhos(aexp, "mexp")
+            #Operacoes entre exp devem ser checadas se são validas
+            self.validate_type(self.get_exp_type(aexp_aexp), self.get_mexp_type(aexp_mexp))
+            # Como a gramática só tem tipo inteiro nesses casos podemos retornar int
+            return "int"
+        else:
+            aexp_mexp = self.achar_Filhos(aexp, "mexp")
+            return self.get_mexp_type(aexp_mexp)
+
+
+
+    def get_mexp_type(self, mexp):
+        #mexp : mexp OP_MULTIPLICA sexp
+        #    | sexp
+        if(len(mexp.leaf) > 0):
+            mexp_mexp = self.achar_Filhos(mexp, "mexp")
+            mexp_sexp = self.achar_Filhos(mexp, "sexp")
+            #Operacoes entre exp devem ser checadas se são validas
+            self.validate_type(self.get_mexp_type(mexp_mexp), self.get_sexp_type(mexp_sexp))
+            # Como a gramática só tem tipo inteiro nesses casos podemos retornar int
+            return "int"
+        else:
+            mexp_sexp = self.achar_Filhos(mexp, "sexp") 
+            return self.get_sexp_type(mexp_sexp)
+
+    def get_sexp_type(self, sexp):
+        #sexp :    OP_NAO sexp << boolean
+        #    | OP_MENOS sexp << int
+        #    | TRUE << boolean
+        #    | FALSE << boolean
+        #    | NUMBER << int
+        #    | NULL << Apenas em RunTime
+        #    | NEW INT ECOLCHETE exp DCOLCHETE << int[]
+        #    | pexp PONTO LENGTH << int
+        #    | pexp ECOLCHETE exp DCOLCHETE
+        #    | pexp
+        if(len(sexp.leaf) > 0):
+            if(sexp.leaf[0] == "!"):
+                return "boolean"
+            elif(sexp.leaf[0] == "-"):
+                return "int"
+            elif(len(sexp.children) == 0):
+                return "int"
+            elif(sexp.leaf[0] == "new"):
+                return "int[]"
+            elif(sexp.leaf[0] == "."):
+                return "int"
+            elif(sexp.leaf[0].lower() == "true"):
+                return "boolean"
+            elif(sexp.leaf[0].lower() == "false"):
+                return "boolean"
+            else:
+                sexp_pexp = self.achar_Filhos(sexp, "pexp")
+                if(sexp_pexp is not None):
+                    return self.get_pexp_type(sexp.children[0])
+                else:
+                    raise Exception(
+                        'Não foi possivel verificar o tipo da variavel'
+                    )
+    
+    def get_pexp_type(self, pexp):
+        #pexp :    ID << class  X
+        #    | THIS << class X
+        #    | NEW ID EPARENTESE DPARENTESE << class X
+        #    | EPARENTESE exp DPARENTESE << exp type
+        #    | pexp PONTO ID << String
+        #    | pexp PONTO ID EPARENTESE exps DPARENTESE << expsType
+        #    | pexp PONTO ID EPARENTESE DPARENTESE << class
+        if(len(pexp.children) == 0):
+            return "class"
+        else:
+            if(pexp.leaf[0] == "("):
+                pexp_exp = self.achar_Filhos(pexp, "exp")
+                return self.get_exp_type(pexp_exp)
+            elif(len(pexp.leaf) == 2):
+                return "String"
+            else:
+                pexp_exps = self.achar_Filhos(pexp, "exps")
+                if(pexp_exps is not None):
+                    return self.get_exps_type(pexp_exps)
+                else:
+                    return "class"
+
+    def get_exps_type(self, exps):
+        #'exps : exp sequenciaexp'
+        #sequenciaexp : VIRGULA exp sequenciaexp
+        #                | empty
+        return self.get_exp_type(exps.children[0])
+
+
     def resolve_exp(self,exp):
         #exp : exp OP_AND rexp
         #    | rexp
@@ -182,34 +290,6 @@ class AnalizadorSemantico(object):
         #    | pexp PONTO ID EPARENTESE DPARENTESE
         pass
 
-    def preenche_SymbolTable(self, prog):
-        #'prog : main classes'
-        main = self.achar_Filhos(prog, "main")
-        classes = self.achar_Filhos(prog, "classes")
-
-        if (main is not None):
-            #'main : CLASS ID ECHAVE PUBLIC STATIC VOID MAIN 
-            #            EPARENTESE STRING ECOLCHETE DCOLCHETE ID 
-            #               DPARENTESE ECHAVE cmd DCHAVE DCHAVE'
-            #
-            self.qtdClasses += 1
-            self.counter_scope += 1
-            self.declClasses.insert(main.leaf[1],main.leaf[0], self.counter_scope) 
-            self.declClasses.insert("main", "static void", self.counter_scope)
-
-        main_cmd = self.achar_Filhos(main, "cmd")
-
-        self.resolve_cmd(main_cmd)
-
-        #FLIPA PARA NEGATIVO OS ESCOPOS PARA DEFINIR QUE TEM MAIS DE UMA CLASSE NO ARQUIVO
-        self.counter_scope *= -1
-
-        if (classes is not None):
-            self.resolve_classes(classes)
-
-        print(self.validate_key_forward('Factorial', 1))    
-        print(self.declClasses)
-
     def resolve_classes(self, classes):
         if (classes.children[0].type != "empty"):
             self.resolve_classes(classes.children[0])
@@ -218,16 +298,17 @@ class AnalizadorSemantico(object):
 
     def resolve_classe(self, classe):
         # classe : CLASS ID extends_id ECHAVE variaveis metodos DCHAVE
-        self.declClasses.insert(classe.leaf[1], "class", self.counter_scope)
+        self.TabelaSimbolos.insert(classe.leaf[1], "class", self.counter_scope)
         variaveis = self.achar_Filhos(classe, "variaveis")
         self.resolve_variaveis(variaveis)
         metodos = self.achar_Filhos(classe, "metodos")
         self.resolve_metodos(metodos)
 
     def pop_all_params(self):
-        for k,v in list(self.declClasses._symbols.items()):
+        for k,v in list(self.TabelaSimbolos._symbols.items()):
             if "params" in v:
-                del self.declClasses._symbols[k]
+                print('\n Remove all function params in scope')
+                del self.TabelaSimbolos._symbols[k]
 
     def resolve_metodos(self, metodos):
         
@@ -242,7 +323,7 @@ class AnalizadorSemantico(object):
                 self.counter_scope += 1
             else:
                 self.counter_scope -= 1
-            self.declClasses.insert(metodo.leaf[1], "class", self.counter_scope)
+            self.TabelaSimbolos.insert(metodo.leaf[1], "class", self.counter_scope)
 
             #params : tipo ID sequenciaparams
             params = self.achar_Filhos(self.achar_Filhos(metodo, "params_o"), "params")
@@ -250,21 +331,40 @@ class AnalizadorSemantico(object):
                 self.resolve_params(params)
 
             variaveis = self.achar_Filhos(metodo, "variaveis")
+            self.resolve_variaveis(variaveis)
+            
+            print(self.TabelaSimbolos)
+
             cmds = self.achar_Filhos(metodo,"cmds")
+
+            self.resolve_cmds(cmds)
+
             exp = self.achar_Filhos(metodo, "exp")
 
+            self.resolve_exp(exp)
 
             # Acabou a funcao deleta parametros do escopo e muda o escopo
-             if(self.counter_scope > 0):
+            if(self.counter_scope > 0):
                 self.counter_scope -= 1
             else:
                 self.counter_scope += 1 
             self.pop_all_params()
             
+    def resolve_cmds(self, cmds):
+        #cmds : cmd cmds
+        #    | empty
+        if(len(cmds.children) > 1):
+            cmds_cmd = self.achar_Filhos(cmds, "cmd")
+            cmds_cmds = self.achar_Filhos(cmds, "cmds")
+            self.resolve_cmd(cmds_cmd)
+            self.resolve_cmds(cmds_cmds)
+        else:
+            pass
+
 
     def resolve_params(self,params):
         tipo = self.achar_Filhos(params, "tipo")
-        self.declClasses.insert(params.leaf[0], self.procura_tipo(tipo), "params")
+        self.TabelaSimbolos.insert(params.leaf[0], self.procura_tipo(tipo), "params")
 
         sequenciaparams = self.achar_Filhos(params, "sequenciaparams")
         self.resolve_sequencia_params(sequenciaparams)
@@ -274,7 +374,7 @@ class AnalizadorSemantico(object):
         #            | empty
         tipo = self.achar_Filhos(sequenciaparams, "tipo")
         if (tipo is not None):
-            self.declClasses.insert(sequenciaparams.leaf[1], self.procura_tipo(tipo), "params")
+            self.TabelaSimbolos.insert(sequenciaparams.leaf[1], self.procura_tipo(tipo), "params")
             self.resolve_sequencia_params(self.achar_Filhos(sequenciaparams, "sequenciaparams"))
 
     def procura_tipo(self, classe_tipo):
@@ -300,14 +400,41 @@ class AnalizadorSemantico(object):
             if(len(tipo_variavel.children) > 0):
                 tipo2 = tipo_variavel.children[0]
                 if(len(tipo2.children) > 0):
-                    self.declClasses.insert(variavel.leaf[0], "int", self.counter_scope)
+                    self.TabelaSimbolos.insert(variavel.leaf[0], "int", self.counter_scope)
                 else:
-                    self.declClasses.insert(variavel.leaf[0], "int[]", self.counter_scope)
+                    self.TabelaSimbolos.insert(variavel.leaf[0], "int[]", self.counter_scope)
             else:
                 if(tipo_variavel.leaf[0] == "boolean"):
-                    self.declClasses.insert(variavel.leaf[0], "boolean", self.counter_scope)
+                    self.TabelaSimbolos.insert(variavel.leaf[0], "boolean", self.counter_scope)
                 else:
-                    self.declClasses.insert(variavel.leaf[0], "class", self.counter_scope)
+                    self.TabelaSimbolos.insert(variavel.leaf[0], "class", self.counter_scope)
 
         
+
+    def preenche_SymbolTable(self, prog):
+        #'prog : main classes'
+        main = self.achar_Filhos(prog, "main")
+        classes = self.achar_Filhos(prog, "classes")
+
+        if (main is not None):
+            #'main : CLASS ID ECHAVE PUBLIC STATIC VOID MAIN 
+            #            EPARENTESE STRING ECOLCHETE DCOLCHETE ID 
+            #               DPARENTESE ECHAVE cmd DCHAVE DCHAVE'
+            #
+            self.counter_scope += 1
+            self.TabelaSimbolos.insert(main.leaf[1],main.leaf[0], self.counter_scope) 
+            self.TabelaSimbolos.insert("main", "static void", self.counter_scope)
+
+        main_cmd = self.achar_Filhos(main, "cmd")
+
+        self.resolve_cmd(main_cmd)
+
+        #FLIPA PARA NEGATIVO OS ESCOPOS PARA DEFINIR QUE TEM MAIS DE UMA CLASSE NO ARQUIVO
+        self.counter_scope *= -1
+
+        if (classes is not None):
+            self.resolve_classes(classes)
+
+        print(self.validate_key('Factorial', 1))    
+        print(self.TabelaSimbolos)
     
