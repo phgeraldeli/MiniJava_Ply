@@ -9,7 +9,6 @@ class SymbolTable(object):
             ('%7s: %r' % (key, value))
             for key, value in self._symbols.items()
         )
-        lines.append('\n')
         s = '\n'.join(lines)
         return s
 
