@@ -249,10 +249,16 @@ class AnalizadorSemantico(object):
             if params is not None:
                 self.resolve_params(params)
 
+            variaveis = self.achar_Filhos(metodo, "variaveis")
+            cmds = self.achar_Filhos(metodo,"cmds")
+            exp = self.achar_Filhos(metodo, "exp")
 
-            
 
-            # Acabou a funcao deleta parametros do escopo   
+            # Acabou a funcao deleta parametros do escopo e muda o escopo
+             if(self.counter_scope > 0):
+                self.counter_scope -= 1
+            else:
+                self.counter_scope += 1 
             self.pop_all_params()
             
 
